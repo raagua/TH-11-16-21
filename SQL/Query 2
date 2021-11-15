@@ -1,0 +1,14 @@
+set datefirst 1;
+With
+T1 as 
+(
+Select Ads_user_id,Dwell_time, concat(Datepart(year,timestamp),Datepart(week,timestamp)) as YrWk
+from Ad_service_interaction_data ),
+T2 as 
+(Select Ads_user_id,yrwk,round(sum(Dwell_time) over (Partition by YrWk,Ads_user_id ),1) as total_dwell
+from T1
+where YrWk=concat(Datepart(year,getdate()),Datepart(week,getdate())) 
+)
+select count(distinct ads_user_id)
+from T2
+where total_dwell>60.0
