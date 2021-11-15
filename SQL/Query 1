@@ -1,3 +1,4 @@
+set datefirst 1;
 With
 T1 as 
 (
