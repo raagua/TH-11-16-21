@@ -1,0 +1,36 @@
+set datefirst 1;
+T1 as 
+(
+Select Ads_User_Id,Dwell_time, concat(Datepart(year,Timestamp),Datepart(week,Timestamp)) as YrWk
+from Ad_Service_Interaction_Data),
+T2 as 
+(Select Ads_User_Id,yrwk,round(sum(Dwell_time) over (Partition by YrWk,Ads_User_Id ),1) as total_dwell
+from T1
+where YrWk=concat(Datepart(year,getdate()),Datepart(week,getdate())) 
+),
+T3 as
+(select distinct Ads_User_Id
+from T2
+where total_dwell>0.0
+),
+T4 as 
+(
+Select Ads_User_Id,Content_Id,concat(Datepart(year,Timestamp),Datepart(week,Timestamp)) as YrWk
+from TB),
+T5 as 
+(Select Ads_User_Id,Content_Id,yrwk
+from T4
+where YrWk=concat(Datepart(year,getdate()),Datepart(week,getdate())) 
+),
+T6 as
+(select T5.Content_Id, count(T5.Content_Id) as cnt
+from T5 left join T3 on T3.Ads_User_Id=T5.Ads_User_Id
+group by T5.Content_Id
+),
+T7 as
+(select T6.*,Content_Type, Dense_Rank() over (Partition by Content_Type order by cnt desc) as Rank_content
+from T6 left join TC on T6.Content_Id=TC.Content_Id)
+select * from
+T7
+where Rank_content<=5
+order by Content_Type,Rank_Content
