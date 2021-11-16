@@ -1,4 +1,8 @@
+--setting the week to monday-sunday
 set datefirst 1;
+
+-- Identifying the WAU users
+--Assume dwell time is provided in seconds
 T1 as 
 (
 Select Ads_User_Id,Dwell_time, concat(Datepart(year,Timestamp),Datepart(week,Timestamp)) as YrWk
@@ -11,8 +15,10 @@ where YrWk=concat(Datepart(year,getdate()),Datepart(week,getdate()))
 T3 as
 (select distinct Ads_User_Id
 from T2
-where total_dwell>0.0
+where total_dwell>60.0
 ),
+
+--Connecting the WAU users with the specific content in the current week
 T4 as 
 (
 Select Ads_User_Id,Content_Id,concat(Datepart(year,Timestamp),Datepart(week,Timestamp)) as YrWk
@@ -27,9 +33,13 @@ T6 as
 from T5 left join T3 on T3.Ads_User_Id=T5.Ads_User_Id
 group by T5.Content_Id
 ),
+
+--Connecting the identified content with content type and ranking
 T7 as
 (select T6.*,Content_Type, Dense_Rank() over (Partition by Content_Type order by cnt desc) as Rank_content
 from T6 left join TC on T6.Content_Id=TC.Content_Id)
+
+--choosing the top 5 content from each content type
 select * from
 T7
 where Rank_content<=5
