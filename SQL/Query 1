@@ -1,9 +1,15 @@
+--The default SQL week is set to Sunday-Saturday. Need to change that to Monday-Sunday
+
 set datefirst 1;
+
+--With clause helps with refactoring & reducing the complexity of code
 With
 T1 as 
 (
-Select Content_ID,concat(Datepart(year,Timestamp),Datepart(week,Timestamp)) as YrWk
+Select Content_ID,concat(Datepart(year,Timestamp),Datepart(week,Timestamp)) as YrWk 
+--Yrwk is a new variable to define the specific year and week
 from Page_Impression),
+
 T2 as 
 (Select Content_ID,yrwk,count(*) as content_count,
 Dense_Rank() over (Partition by YrWk order by YrWk,count(*) desc ) as rnk
@@ -11,7 +17,9 @@ from T1
 where YrWk=concat(Datepart(year,getdate()),Datepart(week,getdate())) 
 group by Content_ID,yrwk
 )
+
+--Using dense rank might lead to selection of more than 5 records of which some of them would have number of impressions
 Select * from
 T2
-where rownum<=5
+where rnk<=5
 order by yrwk,content_count desc
