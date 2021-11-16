@@ -1,4 +1,6 @@
-The repository is laid out as follows
+The repository is laid out as follows:
+
+**Analysis on content & user database**
 -- SQL (folder)
 ----Query 1 (file)
   Query to identify Top 5 most popular pieces of content consumed this week. 
@@ -9,6 +11,8 @@ The repository is laid out as follows
 
 ----Query 3 (file)
   Query to identify	Top 5 pieces of content from each content type consumed this week by only active users 
+
+**Product & User data Analysis**
 
 -- Part 2 ML (folder)
 ----Scripts/Notebooks (files)
